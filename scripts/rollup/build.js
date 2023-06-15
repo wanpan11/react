@@ -23,6 +23,7 @@ const Packaging = require('./packaging');
 const {asyncRimRaf} = require('./utils');
 const codeFrame = require('@babel/code-frame');
 const Wrappers = require('./wrappers');
+const path = require('path');
 
 const RELEASE_CHANNEL = process.env.RELEASE_CHANNEL;
 
@@ -218,7 +219,11 @@ function getRollupOutputOptions(
     freeze: !isProduction,
     interop: getRollupInteropValue,
     name: globalName,
-    sourcemap: false,
+    sourcemap: true,
+    sourcemapPathTransform(relativeSourcePath, sourcemapPath) {
+      // will replace relative paths with absolute paths
+      return path.resolve(path.dirname(sourcemapPath), relativeSourcePath);
+    },
     esModule: false,
     exports: 'auto',
   };
@@ -369,7 +374,7 @@ function getPlugins(
         const transformed = flowRemoveTypes(code);
         return {
           code: transformed.toString(),
-          map: transformed.generateMap(),
+          map: null,
         };
       },
     },
@@ -397,11 +402,11 @@ function getPlugins(
       )
     ),
     // Remove 'use strict' from individual source files.
-    {
-      transform(source) {
-        return source.replace(/['"]use strict["']/g, '');
-      },
-    },
+    // {
+    //   transform(source) {
+    //     return source.replace(/['"]use strict["']/g, '');
+    //   },
+    // },
     // Turn __DEV__ and process.env checks into constants.
     replace({
       preventAssignment: true,
@@ -419,56 +424,56 @@ function getPlugins(
     isUMDBundle && entry === 'react-art' && commonjs(),
     // Apply dead code elimination and/or minification.
     // closure doesn't yet support leaving ESM imports intact
-    isProduction &&
-      bundleType !== ESM_PROD &&
-      closure({
-        compilation_level: 'SIMPLE',
-        language_in: 'ECMASCRIPT_2020',
-        language_out:
-          bundleType === NODE_ES2015
-            ? 'ECMASCRIPT_2020'
-            : bundleType === BROWSER_SCRIPT
-            ? 'ECMASCRIPT5'
-            : 'ECMASCRIPT5_STRICT',
-        emit_use_strict:
-          bundleType !== BROWSER_SCRIPT &&
-          bundleType !== ESM_PROD &&
-          bundleType !== ESM_DEV,
-        env: 'CUSTOM',
-        warning_level: 'QUIET',
-        apply_input_source_maps: false,
-        use_types_for_optimization: false,
-        process_common_js_modules: false,
-        rewrite_polyfills: false,
-        inject_libraries: false,
-        allow_dynamic_import: true,
+    // isProduction &&
+    //   bundleType !== ESM_PROD &&
+    //   closure({
+    //     compilation_level: 'SIMPLE',
+    //     language_in: 'ECMASCRIPT_2020',
+    //     language_out:
+    //       bundleType === NODE_ES2015
+    //         ? 'ECMASCRIPT_2020'
+    //         : bundleType === BROWSER_SCRIPT
+    //         ? 'ECMASCRIPT5'
+    //         : 'ECMASCRIPT5_STRICT',
+    //     emit_use_strict:
+    //       bundleType !== BROWSER_SCRIPT &&
+    //       bundleType !== ESM_PROD &&
+    //       bundleType !== ESM_DEV,
+    //     env: 'CUSTOM',
+    //     warning_level: 'QUIET',
+    //     apply_input_source_maps: false,
+    //     use_types_for_optimization: false,
+    //     process_common_js_modules: false,
+    //     rewrite_polyfills: false,
+    //     inject_libraries: false,
+    //     allow_dynamic_import: true,
 
-        // Don't let it create global variables in the browser.
-        // https://github.com/facebook/react/issues/10909
-        assume_function_wrapper: !isUMDBundle,
-        renaming: !shouldStayReadable,
-      }),
+    //     // Don't let it create global variables in the browser.
+    //     // https://github.com/facebook/react/issues/10909
+    //     assume_function_wrapper: !isUMDBundle,
+    //     renaming: !shouldStayReadable,
+    //   }),
     // Add the whitespace back if necessary.
-    shouldStayReadable &&
-      prettier({
-        parser: 'flow',
-        singleQuote: false,
-        trailingComma: 'none',
-        bracketSpacing: true,
-      }),
+    // shouldStayReadable &&
+    //   prettier({
+    //     parser: 'flow',
+    //     singleQuote: false,
+    //     trailingComma: 'none',
+    //     bracketSpacing: true,
+    //   }),
     // License and haste headers, top-level `if` blocks.
-    {
-      renderChunk(source) {
-        return Wrappers.wrapBundle(
-          source,
-          bundleType,
-          globalName,
-          filename,
-          moduleType,
-          bundle.wrapWithModuleBoundaries
-        );
-      },
-    },
+    // {
+    //   renderChunk(source) {
+    //     return Wrappers.wrapBundle(
+    //       source,
+    //       bundleType,
+    //       globalName,
+    //       filename,
+    //       moduleType,
+    //       bundle.wrapWithModuleBoundaries
+    //     );
+    //   },
+    // },
     // Record bundle size.
     sizes({
       getSize: (size, gzip) => {
@@ -774,27 +779,27 @@ async function buildEverything() {
   // eslint-disable-next-line no-for-of-loops/no-for-of-loops
   for (const bundle of Bundles.bundles) {
     bundles.push(
-      [bundle, NODE_ES2015],
-      [bundle, ESM_DEV],
-      [bundle, ESM_PROD],
-      [bundle, UMD_DEV],
-      [bundle, UMD_PROD],
-      [bundle, UMD_PROFILING],
-      [bundle, NODE_DEV],
-      [bundle, NODE_PROD],
-      [bundle, NODE_PROFILING],
-      [bundle, BUN_DEV],
-      [bundle, BUN_PROD],
-      [bundle, FB_WWW_DEV],
-      [bundle, FB_WWW_PROD],
-      [bundle, FB_WWW_PROFILING],
-      [bundle, RN_OSS_DEV],
-      [bundle, RN_OSS_PROD],
-      [bundle, RN_OSS_PROFILING],
-      [bundle, RN_FB_DEV],
-      [bundle, RN_FB_PROD],
-      [bundle, RN_FB_PROFILING],
-      [bundle, BROWSER_SCRIPT]
+      // [bundle, NODE_ES2015],
+      // [bundle, ESM_DEV],
+      // [bundle, ESM_PROD],
+      [bundle, UMD_DEV]
+      // [bundle, UMD_PROD]
+      // [bundle, UMD_PROFILING]
+      // [bundle, NODE_DEV],
+      // [bundle, NODE_PROD],
+      // [bundle, NODE_PROFILING],
+      // [bundle, BUN_DEV],
+      // [bundle, BUN_PROD]
+      // [bundle, FB_WWW_DEV],
+      // [bundle, FB_WWW_PROD],
+      // [bundle, FB_WWW_PROFILING],
+      // [bundle, RN_OSS_DEV],
+      // [bundle, RN_OSS_PROD],
+      // [bundle, RN_OSS_PROFILING],
+      // [bundle, RN_FB_DEV],
+      // [bundle, RN_FB_PROD],
+      // [bundle, RN_FB_PROFILING],
+      // [bundle, BROWSER_SCRIPT]
     );
   }
 
