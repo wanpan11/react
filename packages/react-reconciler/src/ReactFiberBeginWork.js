@@ -1571,9 +1571,9 @@ function updateHostRoot(
     // already hydrated.
     resetHydrationState();
     if (nextChildren === prevChildren) {
-      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
+      return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes); // PP bailoutOnAlreadyFinishedWork 复用组件
     }
-    reconcileChildren(current, workInProgress, nextChildren, renderLanes);
+    reconcileChildren(current, workInProgress, nextChildren, renderLanes); // PP reconcileChildren 更新组件
   }
   return workInProgress.child;
 }

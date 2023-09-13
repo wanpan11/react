@@ -117,7 +117,7 @@ export function ensureRootIsScheduled(root: FiberRoot): void {
   } else {
     if (!didScheduleMicrotask) {
       didScheduleMicrotask = true;
-      scheduleImmediateTask(processRootScheduleInMicrotask);
+      scheduleImmediateTask(processRootScheduleInMicrotask); // PP scheduleImmediateTask
     }
   }
 
@@ -255,7 +255,7 @@ function processRootScheduleInMicrotask() {
       markRootEntangled(root, mergeLanes(currentEventTransitionLane, SyncLane));
     }
 
-    const nextLanes = scheduleTaskForRootDuringMicrotask(root, currentTime);
+    const nextLanes = scheduleTaskForRootDuringMicrotask(root, currentTime); // PP 1 包装更新任务
     if (nextLanes === NoLane) {
       // This root has no more pending work. Remove it from the schedule. To
       // guard against subtle reentrancy bugs, this microtask is the only place
@@ -391,7 +391,7 @@ function scheduleTaskForRootDuringMicrotask(
         break;
     }
 
-    const newCallbackNode = scheduleCallback(
+    const newCallbackNode = scheduleCallback( // PP 2 真实更新任务
       schedulerPriorityLevel,
       performConcurrentWorkOnRoot.bind(null, root),
     );
@@ -467,7 +467,7 @@ function scheduleImmediateTask(cb: () => mixed) {
   // TODO: Can we land supportsMicrotasks? Which environments don't support it?
   // Alternatively, can we move this check to the host config?
   if (supportsMicrotasks) {
-    scheduleMicrotask(() => {
+    scheduleMicrotask(() => { // PP scheduleMicrotask 
       // In Safari, appending an iframe forces microtasks to run.
       // https://github.com/facebook/react/issues/22459
       // We don't support running callbacks in the middle of render
@@ -484,7 +484,7 @@ function scheduleImmediateTask(cb: () => mixed) {
         Scheduler_scheduleCallback(ImmediateSchedulerPriority, cb);
         return;
       }
-      cb();
+      cb(); // processRootScheduleInMicrotask
     });
   } else {
     // If microtasks are not supported, use Scheduler.

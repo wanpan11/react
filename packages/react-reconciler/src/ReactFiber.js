@@ -653,7 +653,7 @@ export function createFiberFromElement(
   const type = element.type;
   const key = element.key;
   const pendingProps = element.props;
-  const fiber = createFiberFromTypeAndProps(
+  const fiber = createFiberFromTypeAndProps( // PP createFiberFromTypeAndProps
     type,
     key,
     pendingProps,

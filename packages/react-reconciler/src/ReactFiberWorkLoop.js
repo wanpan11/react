@@ -888,7 +888,7 @@ export function performConcurrentWorkOnRoot(
     !includesBlockingLane(root, lanes) &&
     !includesExpiredLane(root, lanes) &&
     (disableSchedulerTimeoutInWorkLoop || !didTimeout);
-  let exitStatus = shouldTimeSlice
+  let exitStatus = shouldTimeSlice // PP renderRootSync renderRootConcurrent
     ? renderRootConcurrent(root, lanes)
     : renderRootSync(root, lanes);
   if (exitStatus !== RootInProgress) {
@@ -1878,7 +1878,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
     }
 
     workInProgressTransitions = getTransitionsForLanes(root, lanes);
-    prepareFreshStack(root, lanes);
+    prepareFreshStack(root, lanes); // PP render阶段 初始化全局变量
   }
 
   if (__DEV__) {
@@ -2247,7 +2247,7 @@ function performUnitOfWork(unitOfWork: Fiber): void {
     next = beginWork(current, unitOfWork, renderLanes);
     stopProfilerTimerIfRunningAndRecordDelta(unitOfWork, true);
   } else {
-    next = beginWork(current, unitOfWork, renderLanes);
+    next = beginWork(current, unitOfWork, renderLanes); // PP beginWork
   }
 
   resetCurrentDebugFiberInDEV();
