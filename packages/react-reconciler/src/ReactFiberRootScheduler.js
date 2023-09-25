@@ -117,7 +117,7 @@ export function ensureRootIsScheduled(root: FiberRoot): void {
   } else {
     if (!didScheduleMicrotask) {
       didScheduleMicrotask = true;
-      scheduleImmediateTask(processRootScheduleInMicrotask); // PP scheduleImmediateTask
+      scheduleImmediateTask(processRootScheduleInMicrotask); // Dbug scheduleImmediateTask
     }
   }
 
@@ -188,7 +188,7 @@ function flushSyncWorkAcrossRoots_impl(onlyLegacy: boolean) {
             // TODO: Pass nextLanes as an argument instead of computing it again
             // inside performSyncWorkOnRoot.
             didPerformSomeWork = true;
-            performSyncWorkOnRoot(root);
+            performSyncWorkOnRoot(root); // Dbug task 同步更新任务 直接执行
           } catch (error) {
             // Collect errors so we can rethrow them at the end
             if (errors === null) {
@@ -255,7 +255,7 @@ function processRootScheduleInMicrotask() {
       markRootEntangled(root, mergeLanes(currentEventTransitionLane, SyncLane));
     }
 
-    const nextLanes = scheduleTaskForRootDuringMicrotask(root, currentTime); // PP 1 包装更新任务
+    const nextLanes = scheduleTaskForRootDuringMicrotask(root, currentTime); // Dbug  判断任务类型 同步 异步
     if (nextLanes === NoLane) {
       // This root has no more pending work. Remove it from the schedule. To
       // guard against subtle reentrancy bugs, this microtask is the only place
@@ -340,7 +340,7 @@ function scheduleTaskForRootDuringMicrotask(
   }
 
   // Schedule a new callback in the host environment.
-  if (includesSyncLane(nextLanes)) {
+  if (includesSyncLane(nextLanes)) { // Dbug 同步任务
     // Synchronous work is always flushed at the end of the microtask, so we
     // don't need to schedule an additional task.
     if (existingCallbackNode !== null) {
@@ -349,7 +349,7 @@ function scheduleTaskForRootDuringMicrotask(
     root.callbackPriority = SyncLane;
     root.callbackNode = null;
     return SyncLane;
-  } else {
+  } else { // Dbug 异步任务
     // We use the highest priority lane to represent the priority of the callback.
     const existingCallbackPriority = root.callbackPriority;
     const newCallbackPriority = getHighestPriorityLane(nextLanes);
@@ -391,7 +391,7 @@ function scheduleTaskForRootDuringMicrotask(
         break;
     }
 
-    const newCallbackNode = scheduleCallback( // PP 2 真实更新任务
+    const newCallbackNode = scheduleCallback( // Dbug task 异步更新任务 使用 scheduleCallback 来调度
       schedulerPriorityLevel,
       performConcurrentWorkOnRoot.bind(null, root),
     );
@@ -467,7 +467,7 @@ function scheduleImmediateTask(cb: () => mixed) {
   // TODO: Can we land supportsMicrotasks? Which environments don't support it?
   // Alternatively, can we move this check to the host config?
   if (supportsMicrotasks) {
-    scheduleMicrotask(() => { // PP scheduleMicrotask 
+    scheduleMicrotask(() => { // Dbug scheduleMicrotask 
       // In Safari, appending an iframe forces microtasks to run.
       // https://github.com/facebook/react/issues/22459
       // We don't support running callbacks in the middle of render

@@ -888,7 +888,7 @@ export function performConcurrentWorkOnRoot(
     !includesBlockingLane(root, lanes) &&
     !includesExpiredLane(root, lanes) &&
     (disableSchedulerTimeoutInWorkLoop || !didTimeout);
-  let exitStatus = shouldTimeSlice // PP renderRootSync renderRootConcurrent
+  let exitStatus = shouldTimeSlice // Dbug renderRootSync renderRootConcurrent
     ? renderRootConcurrent(root, lanes)
     : renderRootSync(root, lanes);
   if (exitStatus !== RootInProgress) {
@@ -1294,7 +1294,7 @@ export function performSyncWorkOnRoot(root: FiberRoot): null {
     return null;
   }
 
-  let exitStatus = renderRootSync(root, lanes);
+  let exitStatus = renderRootSync(root, lanes); // Dbug renderRootSync(root, lanes)
   if (root.tag !== LegacyRoot && exitStatus === RootErrored) {
     // If something threw an error, try rendering one more time. We'll render
     // synchronously to block concurrent data mutations, and we'll includes
@@ -1878,7 +1878,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
     }
 
     workInProgressTransitions = getTransitionsForLanes(root, lanes);
-    prepareFreshStack(root, lanes); // PP render阶段 初始化全局变量
+    prepareFreshStack(root, lanes); // Dbug render阶段 初始化全局变量
   }
 
   if (__DEV__) {
@@ -1967,7 +1967,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
 
 // The work loop is an extremely hot path. Tell Closure not to inline it.
 /** @noinline */
-function workLoopSync() {
+function workLoopSync() { // Dbug workLoopSync 同步更新
   // Perform work without checking if we need to yield between fiber.
   while (workInProgress !== null) {
     performUnitOfWork(workInProgress);
@@ -2247,7 +2247,7 @@ function performUnitOfWork(unitOfWork: Fiber): void {
     next = beginWork(current, unitOfWork, renderLanes);
     stopProfilerTimerIfRunningAndRecordDelta(unitOfWork, true);
   } else {
-    next = beginWork(current, unitOfWork, renderLanes); // PP beginWork
+    next = beginWork(current, unitOfWork, renderLanes); // Dbug beginWork
   }
 
   resetCurrentDebugFiberInDEV();

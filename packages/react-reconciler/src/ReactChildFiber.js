@@ -1295,7 +1295,7 @@ function createChildReconciler(
       created.return = returnFiber;
       return created;
     } else {
-      const created = createFiberFromElement(element, returnFiber.mode, lanes); // PP createFiberFromElement 构建组件
+      const created = createFiberFromElement(element, returnFiber.mode, lanes); // Dbug createFiberFromElement 构建组件Fiber
       created.ref = coerceRef(returnFiber, currentFirstChild, element);
       created.return = returnFiber;
       return created;
@@ -1341,7 +1341,7 @@ function createChildReconciler(
   // This API will tag the children with the side-effect of the reconciliation
   // itself. They will be added to the side-effect list as we pass through the
   // children and the parent.
-  function reconcileChildFibersImpl( // PP reconcileChildFibersImpl 
+  function reconcileChildFibersImpl( // Dbug reconcileChildFibersImpl 
     returnFiber: Fiber,
     currentFirstChild: Fiber | null,
     newChild: any,

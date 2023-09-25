@@ -206,7 +206,7 @@ function flushWork(hasTimeRemaining: boolean, initialTime: number) {
   }
 }
 
-function workLoop(hasTimeRemaining: boolean, initialTime: number) {
+function workLoop(hasTimeRemaining: boolean, initialTime: number) { // Dbug workLoop 异步更新
   let currentTime = initialTime;
   advanceTimers(currentTime);
   currentTask = peek(taskQueue);
@@ -215,11 +215,11 @@ function workLoop(hasTimeRemaining: boolean, initialTime: number) {
     !(enableSchedulerDebugging && isSchedulerPaused)
   ) {
     if (
-      currentTask.expirationTime > currentTime && // PP shouldYieldToHost 时间切片判断
+      currentTask.expirationTime > currentTime && // Dbug shouldYieldToHost 时间切片判断
       (!hasTimeRemaining || shouldYieldToHost())
     ) {
       // This currentTask hasn't expired, and we've reached the deadline.
-      break; // PP 任务过期时间没到 会直接退出
+      break; // Dbug 任务过期时间没到 会直接退出
     }
     // $FlowFixMe[incompatible-use] found when upgrading Flow
     const callback = currentTask.callback;
@@ -234,7 +234,7 @@ function workLoop(hasTimeRemaining: boolean, initialTime: number) {
         // $FlowFixMe[incompatible-call] found when upgrading Flow
         markTaskRun(currentTask, currentTime);
       }
-      const continuationCallback = callback(didUserCallbackTimeout); // PP 更新任务开始执行
+      const continuationCallback = callback(didUserCallbackTimeout); // Dbug 更新任务开始执行
       currentTime = getCurrentTime();
       if (typeof continuationCallback === 'function') {
         // If a continuation is returned, immediately yield to the main thread
@@ -578,9 +578,9 @@ const performWorkUntilDeadline = () => {
     let hasMoreWork = true;
     try {
       // $FlowFixMe[not-a-function] found when upgrading Flow
-      hasMoreWork = scheduledHostCallback(hasTimeRemaining, currentTime); // PP scheduledHostCallback
+      hasMoreWork = scheduledHostCallback(hasTimeRemaining, currentTime); // Dbug scheduledHostCallback flushWork
     } finally {
-      if (hasMoreWork) { // PP hasMoreWork 默认为 true 实现时间切片 微任务调度
+      if (hasMoreWork) { // Dbug hasMoreWork 默认为 true 实现时间切片 微任务调度
         // If there's more work, schedule the next message event at the end
         // of the preceding one.
         schedulePerformWorkUntilDeadline();
@@ -597,7 +597,7 @@ const performWorkUntilDeadline = () => {
   needsPaint = false;
 };
 
-let schedulePerformWorkUntilDeadline; // PP MessageChannel 任务调度
+let schedulePerformWorkUntilDeadline; // Dbug MessageChannel 任务调度
 if (typeof localSetImmediate === 'function') {
   // Node.js and old IE.
   // There's a few reasons for why we prefer setImmediate.
